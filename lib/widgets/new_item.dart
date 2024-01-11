@@ -4,7 +4,9 @@ import 'package:shopping_list_app/models/category.dart';
 import 'package:shopping_list_app/models/grocery_item.dart';
 
 class NewItem extends StatefulWidget {
-  const NewItem({super.key});
+  const NewItem(this.grocery, {super.key});
+
+  final GroceryItem? grocery;
 
   @override
   State<NewItem> createState() => _NewItemState();
@@ -19,6 +21,9 @@ class _NewItemState extends State<NewItem> {
   void _saveItem() {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
+      print(_enteredName);
+      print(_quantity);
+      print(_selectedCategory);
       Navigator.of(context).pop(
         GroceryItem(
             id: DateTime.now().toString(),
@@ -47,6 +52,8 @@ class _NewItemState extends State<NewItem> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 TextFormField(
+                  initialValue:
+                      widget.grocery == null ? "" : widget.grocery!.name,
                   maxLength: 50,
                   decoration: const InputDecoration(label: Text("Name")),
                   validator: (value) {
@@ -67,7 +74,9 @@ class _NewItemState extends State<NewItem> {
                   children: [
                     Expanded(
                       child: TextFormField(
-                        initialValue: "1",
+                        initialValue: widget.grocery == null
+                            ? "1"
+                            : widget.grocery!.quantity.toString(),
                         decoration: const InputDecoration(
                           label: Text("Quantity"),
                         ),
@@ -89,7 +98,9 @@ class _NewItemState extends State<NewItem> {
                     const SizedBox(width: 8),
                     Expanded(
                       child: DropdownButtonFormField(
-                        value: _selectedCategory,
+                        value: widget.grocery == null
+                            ? _selectedCategory
+                            : widget.grocery!.category,
                         items: [
                           for (final category in categories.entries)
                             DropdownMenuItem(
@@ -123,7 +134,9 @@ class _NewItemState extends State<NewItem> {
                     TextButton(
                         onPressed: _resetItem, child: const Text("Reset")),
                     ElevatedButton(
-                        onPressed: _saveItem, child: const Text("Add Item")),
+                        onPressed: _saveItem,
+                        child: Text(
+                            widget.grocery == null ? "Add Item" : "Edit item")),
                   ],
                 )
               ],
