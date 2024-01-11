@@ -20,11 +20,14 @@ class _NewItemState extends State<NewItem> {
   var _enteredName = "";
   var _quantity = 1;
   var _selectedCategory = categories[Categories.vegetables]!;
+  var _isSending = false;
 
   void _saveItem() async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
-
+      setState(() {
+        _isSending = true;
+      });
       final url = Uri.https("groceries-flutter-default-rtdb.firebaseio.com",
           "shopping-list.json");
 
@@ -36,12 +39,17 @@ class _NewItemState extends State<NewItem> {
             "category": _selectedCategory.title
           }));
 
+      final Map<String, dynamic> resData = json.decode(response.body);
+
       if (!context.mounted) {
         return;
       }
 
-      print(response);
-      Navigator.of(context).pop();
+      Navigator.of(context).pop(GroceryItem(
+          id: resData['name'],
+          name: _enteredName,
+          quantity: _quantity,
+          category: _selectedCategory));
     }
   }
 
@@ -143,11 +151,19 @@ class _NewItemState extends State<NewItem> {
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     TextButton(
-                        onPressed: _resetItem, child: const Text("Reset")),
+                        onPressed: _isSending ? null : _resetItem,
+                        child: const Text("Reset")),
                     ElevatedButton(
-                        onPressed: _saveItem,
-                        child: Text(
-                            widget.grocery == null ? "Add Item" : "Edit item")),
+                        onPressed: _isSending ? null : _saveItem,
+                        child: _isSending
+                            ? const SizedBox(
+                                height: 10,
+                                width: 10,
+                                child: CircularProgressIndicator(),
+                              )
+                            : Text(widget.grocery == null
+                                ? "Add Item"
+                                : "Edit item")),
                   ],
                 )
               ],
