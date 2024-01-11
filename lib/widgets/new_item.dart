@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shopping_list_app/data/categories.dart';
+import 'package:shopping_list_app/models/category.dart';
 
 class NewItem extends StatefulWidget {
   const NewItem({super.key});
@@ -9,6 +10,21 @@ class NewItem extends StatefulWidget {
 }
 
 class _NewItemState extends State<NewItem> {
+  final _formKey = GlobalKey<FormState>();
+  var _enteredName = "";
+  var _quantity = 1;
+  var _selectedCategory = categories[Categories.vegetables]!;
+
+  void _saveItem() {
+    if (_formKey.currentState!.validate()) {
+      _formKey.currentState!.save();
+    }
+  }
+
+  void _resetItem() {
+    _formKey.currentState!.reset();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -18,7 +34,7 @@ class _NewItemState extends State<NewItem> {
         body: Padding(
           padding: const EdgeInsets.all(16),
           child: Form(
-            // key: _formKey,
+            key: _formKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -26,10 +42,16 @@ class _NewItemState extends State<NewItem> {
                   maxLength: 50,
                   decoration: const InputDecoration(label: Text("Name")),
                   validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter some text';
+                    if (value == null ||
+                        value.isEmpty ||
+                        value.trim().length <= 1 ||
+                        value.trim().length > 50) {
+                      return 'must be between 1 and 50 characters.';
                     }
                     return null;
+                  },
+                  onSaved: (value) {
+                    _enteredName = value!;
                   },
                 ),
                 Row(
@@ -41,17 +63,25 @@ class _NewItemState extends State<NewItem> {
                         decoration: const InputDecoration(
                           label: Text("Quantity"),
                         ),
+                        keyboardType: TextInputType.number,
                         validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter some text';
+                          if (value == null ||
+                              value.isEmpty ||
+                              int.tryParse(value) == null ||
+                              int.tryParse(value)! <= 0) {
+                            return 'must be a valid, positive number.';
                           }
                           return null;
+                        },
+                        onSaved: (value) {
+                          _quantity = int.parse(value!);
                         },
                       ),
                     ),
                     const SizedBox(width: 8),
                     Expanded(
                       child: DropdownButtonFormField(
+                        value: _selectedCategory,
                         items: [
                           for (final category in categories.entries)
                             DropdownMenuItem(
@@ -69,24 +99,25 @@ class _NewItemState extends State<NewItem> {
                               ),
                             )
                         ],
-                        onChanged: (value) {},
+                        onChanged: (value) {
+                          setState(() {
+                            _selectedCategory = value!;
+                          });
+                        },
                       ),
                     ),
                   ],
                 ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  child: ElevatedButton(
-                    onPressed: () {
-                      // if (_formKey.currentState!.validate()) {
-                      //   ScaffoldMessenger.of(context).showSnackBar(
-                      //     const SnackBar(content: Text('Processing Data')),
-                      //   );
-                      // }
-                    },
-                    child: const Text('Submit'),
-                  ),
-                ),
+                const SizedBox(height: 24),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    TextButton(
+                        onPressed: _resetItem, child: const Text("Reset")),
+                    ElevatedButton(
+                        onPressed: _saveItem, child: const Text("Add Item")),
+                  ],
+                )
               ],
             ),
           ),
