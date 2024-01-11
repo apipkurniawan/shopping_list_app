@@ -28,33 +28,30 @@ class _GroceryListState extends State<GroceryList> {
 
     final response = await http.get(url);
     final Map<String, dynamic> listData = json.decode(response.body);
-    final List<GroceryItem> _loadItems = [];
+    final List<GroceryItem> loadItems = [];
     for (var item in listData.entries) {
       final category = categories.entries
           .firstWhere(
               (catItem) => catItem.value.title == item.value['category'])
           .value;
-      _loadItems.add(GroceryItem(
+      loadItems.add(GroceryItem(
           id: item.key,
           name: item.value['name'],
           quantity: item.value['quantity'],
           category: category));
     }
+
     setState(() {
-      _groceryItems = _loadItems;
+      _groceryItems = loadItems;
     });
   }
 
   void _addItem() async {
-    final newItem = await Navigator.of(context).push<GroceryItem>(
+    await Navigator.of(context).push<GroceryItem>(
       MaterialPageRoute(
         builder: (ctx) => const NewItem(null),
       ),
     );
-
-    if (newItem == null) {
-      return;
-    }
 
     _loadItems();
   }

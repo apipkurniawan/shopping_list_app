@@ -36,12 +36,11 @@ class _NewItemState extends State<NewItem> {
             "category": _selectedCategory.title
           }));
 
-      print(response);
-
       if (!context.mounted) {
         return;
       }
 
+      print(response);
       Navigator.of(context).pop();
     }
   }
